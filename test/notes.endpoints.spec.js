@@ -32,7 +32,7 @@ describe('Notes endpoints', () => {
       const testFolders = makeFoldersArray();
       const testNotes = makeNotesArray();
 
-      beforeEach('insert notes', () => db
+      beforeEach('test notes', () => db
         .into('folders')
         .insert(testFolders)
         .then(() => db
@@ -161,7 +161,7 @@ describe('Notes endpoints', () => {
     });
 
     it('removes XSS attack content from response', () => {
-      const { maliciousNote, sanitizedNote } = makeMaliciousNote;
+      const { maliciousNote, sanitizedNote } = makeMaliciousNote();
       return supertest(app)
         .post('/api/notes')
         .send(maliciousNote)
