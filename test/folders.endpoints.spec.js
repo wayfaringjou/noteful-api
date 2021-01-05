@@ -10,7 +10,7 @@ describe('Folders endpoints', () => {
     `TRUNCATE
     notes,
     folders
-    CONTINUE IDENTITY CASCADE`,
+    RESTART IDENTITY CASCADE`,
   );
 
   before('make knex instance', () => {
@@ -31,6 +31,7 @@ describe('Folders endpoints', () => {
     context('Given no folders', () => {
       it('responds with 200 and an empty list', () => supertest(app)
         .get('/api/folders')
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(200, []));
     });
 
@@ -42,6 +43,7 @@ describe('Folders endpoints', () => {
         .insert(testFolders));
       it('responds with 200 and all of the folders', () => supertest(app)
         .get('/api/folders')
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(200, testFolders));
     });
 
@@ -52,6 +54,7 @@ describe('Folders endpoints', () => {
         .insert([maliciousFolder]));
       it('removes XSS attack content', () => supertest(app)
         .get('/api/folders')
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(200)
         .expect((res) => {
           expect(res.body[0].name).to.eql(sanitizedFolder.name);
@@ -64,6 +67,7 @@ describe('Folders endpoints', () => {
         const folderId = 42;
         return supertest(app)
           .get(`/api/folders/${folderId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(404, { error: { message: "Folder doesn't exist" } });
       });
     });
@@ -79,6 +83,7 @@ describe('Folders endpoints', () => {
         const expectedFolder = testFolders[folderId - 1];
         return supertest(app)
           .get(`/api/folders/${folderId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200, expectedFolder);
       });
     });
@@ -90,6 +95,7 @@ describe('Folders endpoints', () => {
         .insert([maliciousFolder]));
       it('removes XSS attack content', () => supertest(app)
         .get(`/api/folders/${maliciousFolder.id}`)
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.name).to.eql(sanitizedFolder.name);
@@ -105,8 +111,7 @@ describe('Folders endpoints', () => {
       .into('folders')
       .insert(testFolders)
       .then(() => db
-        .into('notes')
-        .insert(testNotes)));
+        .raw("SELECT setval('folders_id_seq', (SELECT MAX(id) from folders));")));
 
     it('creates a folder, responding with 201 and the new folder', () => {
       const newFolder = {
@@ -115,6 +120,7 @@ describe('Folders endpoints', () => {
       return supertest(app)
         .post('/api/folders')
         .send(newFolder)
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(201)
         .expect((res) => {
           expect(res.body.name).to.eql(newFolder.name);
@@ -124,6 +130,7 @@ describe('Folders endpoints', () => {
         .then((res) => {
           supertest(app)
             .get(`/api/folders/${res.body.id}`)
+            .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
             .expect(res.body);
         });
     });
@@ -141,6 +148,7 @@ describe('Folders endpoints', () => {
         return supertest(app)
           .post('/api/folders')
           .send(newFolder)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(400, { error: { message: `Missing '${field}' in request body` } });
       });
     });
@@ -150,6 +158,7 @@ describe('Folders endpoints', () => {
       return supertest(app)
         .post('/api/folders')
         .send(maliciousFolder)
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(201)
         .expect((res) => {
           expect(res.body.name).to.eql(sanitizedFolder.name);
@@ -163,6 +172,7 @@ describe('Folders endpoints', () => {
         const folderId = 42;
         return supertest(app)
           .delete(`/api/folders/${folderId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(404, { error: { message: "Folder doesn't exist" } });
       });
     });
@@ -179,6 +189,7 @@ describe('Folders endpoints', () => {
         const expectedFolders = testFolders.filter((folders) => folders.id !== idToRemove);
         return supertest(app)
           .delete(`/api/folders/${idToRemove}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(204)
           .then((res) => {
             supertest(app)
@@ -195,6 +206,7 @@ describe('Folders endpoints', () => {
         const folderId = 42;
         return supertest(app)
           .patch(`/api/folders/${folderId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(404, { error: { message: "Folder doesn't exist" } });
       });
     });
@@ -216,6 +228,7 @@ describe('Folders endpoints', () => {
         return supertest(app)
           .patch(`/api/folders/${idToUpdate}`)
           .send(updateFolder)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(204)
           .then((res) => {
             supertest(app)
@@ -228,6 +241,7 @@ describe('Folders endpoints', () => {
         return supertest(app)
           .patch(`/api/folders/${idToUpdate}`)
           .send({ irrelevantField: 'foo' })
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(400, {
             error: {
               message: "Request body must contain 'name'",
@@ -250,6 +264,7 @@ describe('Folders endpoints', () => {
             ...updateFolder,
             fieldToIgnore: 'should not be in GET response',
           })
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(204)
           .then((res) => {
             supertest(app)

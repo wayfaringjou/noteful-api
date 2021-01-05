@@ -25,6 +25,7 @@ describe('Notes endpoints', () => {
     context('Given no notes', () => {
       it('responds with 200 and an empty list', () => supertest(app)
         .get('/api/notes')
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(200, []));
     });
 
@@ -40,6 +41,7 @@ describe('Notes endpoints', () => {
           .insert(testNotes)));
       it('responds with 200 and all of the notes', () => supertest(app)
         .get('/api/notes')
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(200, testNotes));
     });
 
@@ -54,6 +56,7 @@ describe('Notes endpoints', () => {
           .insert([maliciousNote])));
       it('removes XSS attack content', () => supertest(app)
         .get('/api/notes')
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(200)
         .expect((res) => {
           expect(res.body[0].name).to.eql(sanitizedNote.name);
@@ -67,6 +70,7 @@ describe('Notes endpoints', () => {
         const noteId = 42;
         return supertest(app)
           .get(`/api/notes/${noteId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(404, { error: { message: "Note doesn't exist" } });
       });
     });
@@ -86,6 +90,7 @@ describe('Notes endpoints', () => {
         const expectedNote = testNotes[noteId - 1];
         return supertest(app)
           .get(`/api/notes/${noteId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200, expectedNote);
       });
     });
@@ -101,6 +106,7 @@ describe('Notes endpoints', () => {
           .insert([maliciousNote])));
       it('removes XSS attack content', () => supertest(app)
         .get(`/api/notes/${maliciousNote.id}`)
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.name).to.eql(sanitizedNote.name);
@@ -123,6 +129,7 @@ describe('Notes endpoints', () => {
       return supertest(app)
         .post('/api/notes')
         .send(newNote)
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(201)
         .expect((res) => {
           expect(res.body.name).to.eql(newNote.name);
@@ -131,12 +138,13 @@ describe('Notes endpoints', () => {
           expect(res.body).to.have.property('id');
           expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`);
           const expectedModified = new Intl.DateTimeFormat('en-US').format(new Date());
-          const actualModified = new Intl.DateTimeFormat('en-US').format(new Date(res.body.date_published));
+          const actualModified = new Intl.DateTimeFormat('en-US').format(new Date(res.body.modified));
           expect(actualModified).to.eql(expectedModified);
         })
         .then((res) => {
           supertest(app)
             .get(`/api/notes/${res.body.id}`)
+            .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
             .expect(res.body);
         });
     });
@@ -156,6 +164,7 @@ describe('Notes endpoints', () => {
         return supertest(app)
           .post('/api/notes')
           .send(newNote)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(400, { error: { message: `Missing '${field}' in request body` } });
       });
     });
@@ -165,6 +174,7 @@ describe('Notes endpoints', () => {
       return supertest(app)
         .post('/api/notes')
         .send(maliciousNote)
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .expect(201)
         .expect((res) => {
           expect(res.body.name).to.eql(sanitizedNote.name);
@@ -178,6 +188,7 @@ describe('Notes endpoints', () => {
         const noteId = 42;
         return supertest(app)
           .delete(`/api/notes/${noteId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(404, { error: { message: "Note doesn't exist" } });
       });
     });
@@ -198,10 +209,12 @@ describe('Notes endpoints', () => {
         const expectedNotes = testNotes.filter((notes) => notes.id !== idToRemove);
         return supertest(app)
           .delete(`/api/notes/${idToRemove}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(204)
           .then((res) => {
             supertest(app)
               .get('/api/notes')
+              .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
               .expect(expectedNotes);
           });
       });
@@ -213,6 +226,7 @@ describe('Notes endpoints', () => {
         const noteId = 42;
         return supertest(app)
           .patch(`/api/notes/${noteId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(404, { error: { message: "Note doesn't exist" } });
       });
     });
@@ -240,6 +254,7 @@ describe('Notes endpoints', () => {
         return supertest(app)
           .patch(`/api/notes/${idToUpdate}`)
           .send(updateNote)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(204)
           .then((res) => {
             supertest(app)
@@ -252,6 +267,7 @@ describe('Notes endpoints', () => {
         return supertest(app)
           .patch(`/api/notes/${idToUpdate}`)
           .send({ irrelevantField: 'foo' })
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(400, {
             error: {
               message: "Request body must contain either 'name', 'content', or 'folderid'",
@@ -274,6 +290,7 @@ describe('Notes endpoints', () => {
             ...updateNote,
             fieldToIgnore: 'should not be in GET response',
           })
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(204)
           .then((res) => {
             supertest(app)
