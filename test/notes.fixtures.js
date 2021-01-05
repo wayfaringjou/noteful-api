@@ -111,6 +111,7 @@ function makeMaliciousNote() {
   };
   const sanitizedNote = {
     ...maliciousNote,
+    // eslint-disable-next-line no-useless-escape
     name: 'Inject &lt;script&gt;alert(\"xss\");&lt;/script&gt;',
     content: 'Bad image <img src="https://unexistent.url/test">. But not <strong>all</strong> bad.',
   };

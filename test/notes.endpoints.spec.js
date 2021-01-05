@@ -117,7 +117,7 @@ describe('Notes endpoints', () => {
     it('creates a note, responding with 201 and the new note', () => {
       const newNote = {
         name: 'New note',
-        folderid: '1',
+        folderid: 1,
         content: 'Some test content',
       };
       return supertest(app)
@@ -178,7 +178,7 @@ describe('Notes endpoints', () => {
         const noteId = 42;
         return supertest(app)
           .delete(`/api/notes/${noteId}`)
-          .expect(404, { error: { message: `Note with ${noteId} doesn't exist` } });
+          .expect(404, { error: { message: "Note doesn't exist" } });
       });
     });
 

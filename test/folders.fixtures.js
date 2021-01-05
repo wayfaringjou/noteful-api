@@ -26,6 +26,7 @@ function makeMaliciousFolder() {
   };
   const sanitizedFolder = {
     ...maliciousFolder,
+    // eslint-disable-next-line no-useless-escape
     name: 'Inject &lt;script&gt;alert(\"xss\");&lt;/script&gt;',
   };
   return {

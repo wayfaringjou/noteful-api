@@ -3,14 +3,14 @@ const app = require('../src/app');
 const { makeFoldersArray, makeMaliciousFolder } = require('./folders.fixtures');
 const { makeNotesArray } = require('./notes.fixtures');
 
-describe.only('Folders endpoints', () => {
+describe('Folders endpoints', () => {
   let db;
 
   const cleanup = () => db.raw(
     `TRUNCATE
     notes,
     folders
-    RESTART IDENTITY CASCADE`,
+    CONTINUE IDENTITY CASCADE`,
   );
 
   before('make knex instance', () => {
@@ -24,6 +24,7 @@ describe.only('Folders endpoints', () => {
   after('disconnect from db', () => db.destroy());
 
   before('cleanup', () => cleanup());
+
   afterEach('cleanup', () => cleanup());
 
   describe('GET /api/folders', () => {
@@ -111,9 +112,6 @@ describe.only('Folders endpoints', () => {
       const newFolder = {
         name: 'New folder',
       };
-      db.select('*').from('folders').then((folders) => console.log(folders));
-      console.log('folder data:');
-      console.log(newFolder);
       return supertest(app)
         .post('/api/folders')
         .send(newFolder)

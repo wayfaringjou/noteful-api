@@ -26,23 +26,18 @@ foldersRouter
   .post(jsonParser, (req, res, next) => {
     const { name } = req.body;
     const newFolder = { name };
-    console.log('req data');
-    console.log(req.body);
-    console.log('^req data');
-    console.log('res data:');
-    console.log(res.body);
-    console.log('^res data');
 
-    for (const [key, value] of Object.entries(newFolder)) {
-      if (value == null) {
+    const newFolderKeys = Object.keys(newFolder);
+    newFolderKeys.forEach((key) => {
+      if (newFolder[key] === undefined) {
         return res.status(400).json({
           error: { message: `Missing '${key}' in request body` },
         });
       }
-    }
+    });
 
-    // const error = getFolderValidationError(newFolder);
-    // if (error) return res.status(400).send(error);
+    const error = getFolderValidationError(newFolder);
+    if (error) return res.status(400).send(error);
 
     FoldersService.insertFolder(
       req.app.get('db'),
