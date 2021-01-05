@@ -2,5 +2,5 @@ module.exports = {
   PORT: process.env.PORT || 8000,
   NODE_ENV: process.env.NODE_ENV || 'development',
   API_TOKEN: process.env.API_TOKEN,
-  DB_URL: process.env.DB_URL || 'postgresql://postgres:password@localhost:5432/noteful-api',
+  DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/noteful-api',
 };
