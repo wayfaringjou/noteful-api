@@ -12,6 +12,10 @@ function makeFoldersArray() {
       id: 3,
       name: 'Spangley',
     },
+    {
+      id: 4,
+      name: 'Groovy',
+    },
   ];
 }
 

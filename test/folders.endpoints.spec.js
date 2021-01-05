@@ -1,9 +1,18 @@
 const knex = require('knex');
 const app = require('../src/app');
 const { makeFoldersArray, makeMaliciousFolder } = require('./folders.fixtures');
+const { makeNotesArray } = require('./notes.fixtures');
 
-describe('Folders endpoints', () => {
+describe.only('Folders endpoints', () => {
   let db;
+
+  const cleanup = () => db.raw(
+    `TRUNCATE
+    notes,
+    folders
+    RESTART IDENTITY CASCADE`,
+  );
+
   before('make knex instance', () => {
     db = knex({
       client: 'pg',
@@ -14,9 +23,8 @@ describe('Folders endpoints', () => {
 
   after('disconnect from db', () => db.destroy());
 
-  before('clean the table', () => db.raw('TRUNCATE notes, folders RESTART IDENTITY CASCADE'));
-
-  afterEach('cleanup', () => db.raw('TRUNCATE notes, folders RESTART IDENTITY CASCADE'));
+  before('cleanup', () => cleanup());
+  afterEach('cleanup', () => cleanup());
 
   describe('GET /api/folders', () => {
     context('Given no folders', () => {
@@ -90,14 +98,22 @@ describe('Folders endpoints', () => {
 
   describe('POST /api/folders/', () => {
     const testFolders = makeFoldersArray();
-    beforeEach('insert folders data', () => db
+    const testNotes = makeNotesArray();
+
+    beforeEach('insert test data', () => db
       .into('folders')
-      .insert(testFolders));
+      .insert(testFolders)
+      .then(() => db
+        .into('notes')
+        .insert(testNotes)));
 
     it('creates a folder, responding with 201 and the new folder', () => {
       const newFolder = {
         name: 'New folder',
       };
+      db.select('*').from('folders').then((folders) => console.log(folders));
+      console.log('folder data:');
+      console.log(newFolder);
       return supertest(app)
         .post('/api/folders')
         .send(newFolder)
@@ -149,7 +165,7 @@ describe('Folders endpoints', () => {
         const folderId = 42;
         return supertest(app)
           .delete(`/api/folders/${folderId}`)
-          .expect(404, { error: { message: `Folder with ${folderId} doesn't exist` } });
+          .expect(404, { error: { message: "Folder doesn't exist" } });
       });
     });
 
@@ -216,7 +232,7 @@ describe('Folders endpoints', () => {
           .send({ irrelevantField: 'foo' })
           .expect(400, {
             error: {
-              message: "Request body must contain only 'name'",
+              message: "Request body must contain 'name'",
             },
           });
       });
