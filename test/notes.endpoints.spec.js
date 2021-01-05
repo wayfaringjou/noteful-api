@@ -123,7 +123,7 @@ describe('Notes endpoints', () => {
     it('creates a note, responding with 201 and the new note', () => {
       const newNote = {
         name: 'New note',
-        folderid: 1,
+        folderId: 1,
         content: 'Some test content',
       };
       return supertest(app)
@@ -133,7 +133,7 @@ describe('Notes endpoints', () => {
         .expect(201)
         .expect((res) => {
           expect(res.body.name).to.eql(newNote.name);
-          expect(res.body.folderid).to.eql(newNote.folderid);
+          expect(res.body.folderId).to.eql(newNote.folderId);
           expect(res.body.content).to.eql(newNote.content);
           expect(res.body).to.have.property('id');
           expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`);
@@ -149,13 +149,13 @@ describe('Notes endpoints', () => {
         });
     });
 
-    const requiredFields = ['name', 'content', 'folderid'];
+    const requiredFields = ['name', 'content', 'folderId'];
 
     requiredFields.forEach((field) => {
       const newNote = {
         name: 'Test note',
         content: 'Test content',
-        folderid: 1,
+        folderId: 1,
       };
 
       it(`responds with 400 and an error message when the '${field}' is missing`, () => {
@@ -245,7 +245,7 @@ describe('Notes endpoints', () => {
         const updateNote = {
           name: 'updated name',
           content: 'updated content',
-          folderid: 2,
+          folderId: 2,
         };
         const expectedNote = {
           ...testNotes[idToUpdate - 1],
@@ -270,7 +270,7 @@ describe('Notes endpoints', () => {
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(400, {
             error: {
-              message: "Request body must contain either 'name', 'content', or 'folderid'",
+              message: "Request body must contain either 'name', 'content', or 'folderId'",
             },
           });
       });
